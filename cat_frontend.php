@@ -1,6 +1,3 @@
-<?php
-session_start();
-?>
 <!doctype html>
 <html lang="th">
 <head>
@@ -14,11 +11,15 @@ session_start();
 body{
     background:linear-gradient(135deg,#eef2ff,#f8fafc);
 }
+
+/* HERO */
 .hero{
     background:linear-gradient(135deg,#6366f1,#22d3ee);
     color:#fff;
     border-radius:28px;
 }
+
+/* CARD */
 .cat-card{
     border:none;
     border-radius:22px;
@@ -34,6 +35,8 @@ body{
     height:240px;
     object-fit:cover;
 }
+
+/* SEARCH */
 .search-box{
     border-radius:50px;
     padding-left:50px;
@@ -45,26 +48,35 @@ body{
     transform:translateY(-50%);
     color:#6366f1;
 }
+
+/* ================= MODAL ================= */
+
 .modal-content{
     border:none;
     border-radius:24px;
     overflow:hidden;
 }
+
 .modal-left,
 .carousel-item,
 .modal-img{
     height:520px;
 }
+
 .modal-img{
     width:100%;
     object-fit:cover;
 }
+
+/* ฝั่งข้อมูล */
 .modal-detail{
     height:520px;
     overflow-y:auto;
     padding:35px;
     background:#ffffff;
 }
+
+/* กล่องข้อมูล */
 .detail-card{
     background:#f8fafc;
     border-radius:16px;
@@ -72,11 +84,14 @@ body{
     margin-bottom:18px;
     box-shadow:0 6px 18px rgba(0,0,0,.05);
 }
+
 .detail-card h6{
     font-weight:700;
     color:#6366f1;
     margin-bottom:8px;
 }
+
+/* ปุ่ม */
 .btn-gradient{
     background:linear-gradient(135deg,#6366f1,#22d3ee);
     color:#fff;
@@ -88,6 +103,8 @@ body{
     box-shadow:0 10px 25px rgba(0,0,0,.25);
     color:#fff;
 }
+
+/* FOOTER */
 .site-footer{
     margin-top:60px;
     padding:28px 15px;
@@ -100,37 +117,12 @@ body{
 <body>
 <div class="container py-5">
 
-<!-- ===== ปุ่มมุมขวาบน ===== -->
 <div class="d-flex justify-content-end mb-3">
-
-<?php if(isset($_SESSION["admin_logged_in"]) && $_SESSION["admin_logged_in"] === true): ?>
-    
-    <div class="d-flex align-items-center gap-3">
-        <span class="badge bg-success px-3 py-2 rounded-pill fs-6">
-            <i class="bi bi-person-check-fill me-1"></i>
-            Login อยู่ (<?= htmlspecialchars($_SESSION["admin_username"]); ?>)
-        </span>
-
-        <a href="cat_backend.php" class="btn btn-outline-primary rounded-pill px-3">
-            จัดการข้อมูล
-        </a>
-
-        <a href="logout.php" class="btn btn-danger rounded-pill px-3">
-            Logout
-        </a>
-    </div>
-
-<?php else: ?>
-
     <a href="login.php" class="btn btn-gradient px-4 py-2 rounded-pill shadow-sm">
         <i class="bi bi-person-lock me-2"></i>Admin Login
     </a>
-
-<?php endif; ?>
-
 </div>
 
-<!-- ===== HERO ===== -->
 <div class="hero p-5 mb-5 text-center shadow">
     <h1 class="fw-bold">🐱 สายพันธุ์แมว</h1>
     <p class="mb-0">รวมสายพันธุ์แมวจาก REST API</p>
@@ -173,6 +165,22 @@ function loadCats(){
                 firstImage = "Cat/" + cat.images[0];
             }
 
+            let carouselItems = "";
+            if(cat.images && cat.images.length > 0){
+                cat.images.forEach((img,index)=>{
+                    carouselItems += `
+                    <div class="carousel-item ${index==0?'active':''}">
+                        <img src="Cat/${img}" class="modal-img">
+                    </div>`;
+                });
+            }else{
+                carouselItems = `
+                <div class="carousel-item active">
+                    <img src="https://via.placeholder.com/600x500?text=No+Image"
+                         class="modal-img">
+                </div>`;
+            }
+
             container.innerHTML += `
             <div class="col-lg-4 col-md-6">
                 <div class="card cat-card h-100 shadow-sm">
@@ -189,6 +197,58 @@ function loadCats(){
                             data-bs-target="#modal${cat.id}">
                             ดูรายละเอียด
                         </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="modal${cat.id}">
+                <div class="modal-dialog modal-xl modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="row g-0">
+
+                            <div class="col-md-6 modal-left">
+                                <div id="carousel${cat.id}" class="carousel slide" data-bs-ride="carousel">
+                                    <div class="carousel-inner">
+                                        ${carouselItems}
+                                    </div>
+                                    <button class="carousel-control-prev" type="button"
+                                        data-bs-target="#carousel${cat.id}"
+                                        data-bs-slide="prev">
+                                        <span class="carousel-control-prev-icon"></span>
+                                    </button>
+                                    <button class="carousel-control-next" type="button"
+                                        data-bs-target="#carousel${cat.id}"
+                                        data-bs-slide="next">
+                                        <span class="carousel-control-next-icon"></span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 modal-detail">
+
+                                <h3 class="fw-bold mb-4">
+                                    ${cat.name_th}
+                                    <div class="text-muted fs-6">${cat.name_en}</div>
+                                </h3>
+
+                                <div class="detail-card">
+                                    <h6><i class="bi bi-info-circle me-2"></i>รายละเอียด</h6>
+                                    <div>${cat.description ?? "-"}</div>
+                                </div>
+
+                                <div class="detail-card">
+                                    <h6><i class="bi bi-stars me-2"></i>ลักษณะ</h6>
+                                    <div>${cat.characteristics ?? "-"}</div>
+                                </div>
+
+                                <div class="detail-card">
+                                    <h6><i class="bi bi-heart me-2"></i>การดูแล</h6>
+                                    <div>${cat.care_instructions ?? "-"}</div>
+                                </div>
+
+                            </div>
+
+                        </div>
                     </div>
                 </div>
             </div>
